@@ -1,0 +1,189 @@
+<html> 
+<head> 
+<title>What Time Is It? -- Jared Mooring</title> 
+<script type="text/javascript" src="jquery-1.4.2.js"></script>
+<style>
+    *
+    {
+        font-size:40pt;
+    }
+    .highlight
+    {
+        color:red;
+    }
+    span
+    {
+        width:50px;
+        display:block;
+        float:left;
+        text-align:center;
+    }
+    body
+    {
+        background-color: #000;
+        color: grey;
+    }
+</style>
+</head>
+<body>
+    <div></div>
+<script>
+var words = 
+[
+    'I', 'T', 'L', 'I', 'S', 'E', 'S', 'T', 'I', 'M', 'E',
+    'A', 'C', 'Q', 'U', 'A', 'R', 'T', 'E', 'R', 'D', 'C',
+    'T', 'W', 'E', 'N', 'T', 'Y', 'F', 'I', 'V', 'E', 'X',
+    'H', 'A', 'L', 'F', 'B', 'T', 'E', 'N', 'F', 'T', 'O',
+    'P', 'A', 'S', 'T', 'E', 'R', 'U', 'N', 'I', 'N', 'E',
+    'O', 'N', 'E', 'S', 'I', 'X', 'T', 'H', 'R', 'E', 'E',
+    'F', 'O', 'U', 'R', 'F', 'I', 'V', 'E', 'T', 'W', 'O',
+    'E', 'I', 'G', 'H', 'T', 'E', 'L', 'E', 'V', 'E', 'N',
+    'S', 'E', 'V', 'E', 'N', 'T', 'W', 'E', 'L', 'V', 'E',
+    'T', 'E', 'N', 'S', 'E', 'O', 'C', 'L', 'O', 'C', 'K'
+];
+
+    var joined = words.join('');
+    var d      = new Date();
+
+    printLetters();
+    highlightWords();
+
+    window.setInterval(function() {
+        d = new Date();
+        highlightWords();
+    },60000);
+
+    function printLetters()
+    {
+        for(var i = 0; i < words.length; ++i)
+        {
+            if(i % 11 == 0 && i > 0)
+                $('div').append('<br/>');
+            $('div').append('<span>' + words[i] + '</span>');
+        }
+    }
+
+    function highlightWords()
+    {
+        $('span').removeClass('highlight');
+
+        var hour   = numberToWord(getHour());
+        var minute = numberToWord(getRoundedMinute());
+
+        highlightWord('IT');
+        highlightWord('IS');
+
+        // minute
+        if(minute == 'QUARTER')
+            highlightWord('A');
+
+        highlightWord(minute)
+
+        m = d.getMinutes();
+        if(m >= 3 && m <= 33) {
+            highlightWord('PAST');
+        }
+        else if(m > 33) {
+            hour = numberToWord(getHour()+1);
+            if(m < 58) highlightWord('TO');
+        }
+
+        // hour
+        highlightWord(hour, true);
+
+        if(m <= 2) highlightWord('OCLOCK');
+    }
+
+    function highlightWord(word,uselast)
+    {
+        var start  = uselast ? joined.lastIndexOf(word) : joined.indexOf(word);
+        var length = word.length;
+        
+        $('span').slice(start, start+length).addClass('highlight');
+
+        return word;
+    }
+
+    function numberToWord(number)
+    {
+        var word = '';
+        switch(number)
+        {
+            case 12: word = 'TWELVE'; break;
+            case 1:  word = 'ONE';  break;
+            case 2:  word = 'TWO';  break;
+            case 3:  word = 'THREE';break;
+            case 4:  word = 'FOUR'; break;
+            case 5: 
+            case 55: word = 'FIVE';   break;
+            case 6:  word = 'SIX';    break;
+            case 7:  word = 'SEVEN';  break;
+            case 8:  word = 'EIGHT';  break;
+            case 9:  word = 'NINE';   break;
+            case 10: word = 'TEN';    break;
+            case 11: word = 'ELEVEN'; break;
+            case 15:
+            case 45: word = 'QUARTER';    break;
+            case 25: word = 'TWENTYFIVE'; break;
+            case 20: word = 'TWENTY';     break;
+            case 30: word = 'HALF';       break;
+            default: word = 'OCLOCK';
+        }
+
+        return word;
+    }
+
+    function getHour()
+    {
+        var h = d.getHours();
+
+        // no idea if it will be 24 hour time or not
+        if(h > 12)
+            h = h - 12;
+
+        return h;
+    }
+
+    function getRoundedMinute()
+    {
+        // 3 - 7   = five
+        // 53 - 57 = five
+
+        // 8 - 12  = ten
+        // 48 - 52 = ten
+
+        // 13 - 17 = quarter
+        // 43 - 47 = quarter
+
+        // 18 - 22 = twenty
+        // 38 - 42 = twenty
+
+        // 23 - 27 = twenty five
+        // 33 - 37 = twenty five
+
+        // 28 - 32 = half
+
+        // 0 - 2   = o'clock
+        // 58 - 60 = o'clock
+
+        var m = d.getMinutes();
+
+        if(m >= 3 && m <= 7 || m >= 53 && m <= 57)
+            return 5;
+        if(m >= 8 && m <= 12 || m >= 48 && m <= 52)
+            return 10;
+        if(m >= 13 && m <= 17 || m >= 43 && m <= 47)
+            return 15;
+        if(m >= 18 && m <= 22 || m >= 38 && m <= 42)
+            return 20;
+        if(m >= 23 && m <= 27 || m >= 33 && m <= 37)
+            return 25;
+        if(m >= 28 && m <= 32)
+            return 30;
+        if(m >= 0 && m <= 2 || m >= 58 && m <= 60)
+            return 0;
+    }
+
+</script>
+</body>
+</html>
